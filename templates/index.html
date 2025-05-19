@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador de Crédito MISHELLE ABENDAÑO </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Simulador de Crédito - MISHELLE ABENDAÑO</h1>
+        <form method="POST">
+            <label>Nombre:
+                <input type="text" name="nombre" required>
+            </label><br>
+            <label>Monto del crédito:
+                <input type="number" name="monto" required>
+            </label><br>
+            <label>Plazo (meses):
+                <input type="number" name="plazo" required>
+            </label><br>
+            <label>Tasa de interés (% mensual):
+                <input type="number" step="0.01" name="tasa" required>
+            </label><br>
+            <label>Tipo de tabla:
+                <select name="tipo_tabla" required>
+                    <option value="francesa">Francesa</option>
+                    <option value="alemana">Alemana</option>
+                </select>
+            </label><br>
+            <button type="submit">Simular</button>
+        </form>
+
+        {% if tabla %}
+        <h2>Resultados para {{ nombre }} (Tabla {{ tipo_tabla | capitalize }})</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Mes</th>
+                    <th>Cuota</th>
+                    <th>Capital</th>
+                    <th>Interés</th>
+                    <th>Saldo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in tabla %}
+                <tr>
+                    <td>{{ fila.mes }}</td>
+                    <td>{{ fila.cuota }}</td>
+                    <td>{{ fila.abono }}</td>
+                    <td>{{ fila.interes }}</td>
+                    <td>{{ fila.saldo }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="botones-descarga">
+            <button onclick="descargar('pdf')">Descargar PDF</button>
+            <button onclick="descargar('excel')">Descargar Excel</button>
+        </div>
+
+        <script>
+            function descargar(tipo) {
+                const tabla = {{ tabla | tojson }};
+                fetch(`/descargar/${tipo}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ tabla })
+                })
+                .then(res => res.blob())
+                .then(blob => {
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = tipo === 'pdf' ? 'simulacion.pdf' : 'simulacion.xlsx';
+                    link.click();
+                });
+            }
+        </script>
+        {% endif %}
+    </div>
+</body>
+</html>
