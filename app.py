@@ -11,17 +11,20 @@ def index():
         nombre = request.form["nombre"]
         monto = float(request.form["monto"])
         plazo = int(request.form["plazo"])
-        tasa = float(request.form["tasa"])
+        tasa_anual = float(request.form["tasa"])
         tipo_tabla = request.form["tipo_tabla"]
+
+        tasa_mensual = tasa_anual / 100 / 12  # Corrección: convertir tasa anual a mensual
 
         tabla = []
         saldo = monto
         mes = 1
 
         if tipo_tabla == "francesa":
-            cuota = monto * (tasa / 100) / (1 - (1 + tasa / 100) ** (-plazo))
-            for i in range(plazo):
-                interes = saldo * (tasa / 100)
+            # Corrección: fórmula con tasa mensual
+            cuota = monto * tasa_mensual / (1 - (1 + tasa_mensual) ** (-plazo))
+            for _ in range(plazo):
+                interes = saldo * tasa_mensual
                 abono = cuota - interes
                 saldo -= abono
                 tabla.append({
@@ -35,8 +38,8 @@ def index():
 
         elif tipo_tabla == "alemana":
             abono = monto / plazo
-            for i in range(plazo):
-                interes = saldo * (tasa / 100)
+            for _ in range(plazo):
+                interes = saldo * tasa_mensual
                 cuota = abono + interes
                 saldo -= abono
                 tabla.append({
